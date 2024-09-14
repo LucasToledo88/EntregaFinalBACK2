@@ -1,0 +1,169 @@
+[
+  {
+      "code": "7112233445566",
+      "nombre": "Pizza Napolitana",
+      "precio": 4200,
+      "categoria": "Pizzas",
+      "destacado": true,
+      "activo": true,
+      "stock": 10,
+      "thumbnails": [
+          "pizza.jpeg"
+      ]
+  },
+  {
+      "code": "7321564878951",
+      "nombre": "Pizzas de la Casa",
+      "precio": 3600,
+      "categoria": "Pizzas",
+      "destacado": false,
+      "activo": true,
+      "stock": 13,
+      "thumbnails": [
+          "pizza1.jpeg"
+      ]
+  },
+  {
+      "code": "7623134652312",
+      "nombre": "Pizzas Sin Tacc",
+      "precio": 3200,
+      "categoria": "Pizzas",
+      "destacado": false,
+      "activo": true,
+      "stock": 14,
+      "thumbnails": [
+          "pizza2.jpeg"
+      ]
+  },
+  {
+      "code": "7321654678643",
+      "nombre": "Pizzas Calabreza",
+      "precio": 2100,
+      "categoria": "Pizzas",
+      "destacado": true,
+      "activo": true,
+      "stock": 12,
+      "thumbnails": [
+          "pizza3.jpeg"
+      ]
+  },
+  {
+      "code": "71Pizzas con Salchicas",
+      "precio": 2200,
+      "categoria": "Pizzas",
+      "destacado": true,
+      "activo": true,
+      "stock": 4,
+      "thumbnails": [
+          "pizza4.jpeg"
+      ]
+  },
+  {
+      "code": "7123145646748",
+      "nombre": "Pizzas Mozzarella",
+      "precio": 2400,
+      "categoria": "Pizzas",
+      "destacado": true,
+      "activo": true,
+      "stock": 6,
+      "thumbnails": [
+          "pizza5.jpeg"
+      ]
+  },
+  {
+      "code": "7678451231456",
+      "nombre": "Pizzas Choclo",
+      "precio": 2300,
+      "categoria": "Pizzas",
+      "destacado": true,
+      "activo": true,
+      "stock": 6,
+      "thumbnails": [
+          "pizza6.jpeg"
+      ]
+  },
+  {
+      "code": "7654612312345",
+      "nombre": "Pizzas Calzon",
+      "precio": 2400,
+      "categoria": "Pizzas",
+      "destacado": true,
+      "activo": true,
+      "stock": 6,
+      "thumbnails": [
+          "pizza7.jpeg"
+      ]
+  },
+  {
+      "code": "7564213456123",
+      "nombre": "Pizzas con Huevo",
+      "precio": 2340,
+      "categoria": "Pizzas",
+      "destacado": true,
+      "activo": true,
+      "stock": 6,
+      "thumbnails": [
+          "pizza8.jpeg"
+      ]
+  },
+  {
+      "code": "7923123456123",
+      "nombre": "Pizzas Jamon y Morrones",
+      "precio": 2380,
+      "categoria": "Pizzas",
+      "destacado": true,
+      "activo": true,
+      "stock": 6,
+      "thumbnails": [
+          "pizza9.jpeg"
+      ]
+  },
+  {
+      "code": "7912312312454",
+      "nombre": "Pizzas Rucula",
+      "precio": 2265,
+      "categoria": "Pizzas",
+      "destacado": true,
+      "activo": true,
+      "stock": 6,
+      "thumbnails": [
+          "pizza10.jpeg"
+      ]
+  },
+  {
+      "code": "7231234561231",
+      "nombre": "Pizzas Anchoas",
+      "precio": 2450,
+      "categoria": "Pizzas",
+      "destacado": true,
+      "activo": true,
+      "stock": 6,
+      "thumbnails": [
+          "pizza11.jpeg"
+      ]
+  },
+  {
+      "code": "7123456123123",
+      "nombre": "Pizza Fugazzeta",
+      "precio": 2460,
+      "categoria": "Pizzas",
+      "destacado": true,
+      "activo": true,
+      "stock": 6,
+      "thumbnails": [
+          "pizza12.jpeg"
+      ]
+  },
+  {
+      "code": "7931364215784",
+      "nombre": "Pizza Rellena",
+      "precio": 2410,
+      "categoria": "Pizzas",
+      "destacado": true,
+      "activo": true,
+      "stock": 6,
+      "thumbnails": [
+          "pizza13.jpeg"
+      ]
+  }
+]
