@@ -1,34 +1,36 @@
-import ProductoModel from "../models/producto.model.js";
-//import { nanoid } from 'https://cdn.jsdelivr.net/npm/nanoid/nanoid.js'
+import ProductModel from "../models/product.model.js";
+import { generarClaveAleatoria } from "../util/util.js";
 
-class ProductoDao {
+class ProductDao {
 
-  async addProduct({ code, nombre, precio, stock, categoria, thumbnails }) {
+  async addProduct({ name, price, stock, category, thumbnails }) {
     try {
 
-      if (!code || !nombre || !precio || !stock || !categoria) {
+      if (!name || !price || !stock || !category) {
         console.log("Todos los campos son obligatorios.");
         return;
       }
 
-      const existeProducto = await ProductoModel.findOne({ nombre: nombre });
+      const existeProduct = await ProductModel.findOne({ name: name });
 
-      if (existeProducto) {
+      if (existeProduct) {
         console.log("Ya existe un producto con este código.");
         return;
       }
 
-      const newProduct = new ProductoModel({
+      const code = generarClaveAleatoria(10);
+
+      const newProduct = new ProductModel({
         code,
-        nombre,
-        precio,
+        name,
+        price,
         stock,
-        categoria,
-        activo: true,
-        thumbnails: thumbnails || []
+        category,
+        active: true,
+        thumbnails: thumbnails || ['nuevo.jpeg']
       });
 
-      await newProduct.save();
+      return await newProduct.save();
 
     } catch (error) {
       console.log("Error al agregar producto: ", error);
@@ -43,30 +45,30 @@ class ProductoDao {
       let queryOptions = {};
 
       if (query) {
-        queryOptions = { categoria: query };
+        queryOptions = { category: query };
       }
 
       const sortOptions = {};
       if (sort) {
         if (sort === 'asc' || sort === 'desc') {
-          sortOptions.precio = sort === 'asc' ? 1 : -1;
+          sortOptions.price = sort === 'asc' ? 1 : -1;
         }
       }
 
-      const productos = await ProductoModel
+      const products = await ProductModel
         .find(queryOptions)
         .sort(sortOptions)
         .skip(skip)
         .limit(limit);
 
-      const totalProducts = await ProductoModel.countDocuments(queryOptions);
+      const totalProducts = await ProductModel.countDocuments(queryOptions);
 
       const totalPages = Math.ceil(totalProducts / limit);
       const hasPrevPage = page > 1;
       const hasNextPage = page < totalPages;
 
       return {
-        docs: productos,
+        docs: products,
         totalPages,
         prevPage: hasPrevPage ? page - 1 : null,
         nextPage: hasNextPage ? page + 1 : null,
@@ -77,35 +79,28 @@ class ProductoDao {
         nextLink: hasNextPage ? `/api/products?limit=${limit}&page=${page + 1}&sort=${sort}&query=${query}` : null,
       };
     } catch (error) {
-      console.log("Error al obtener los productos", error);
+      console.log("Error al obtener los productos: ", error);
       throw error;
     }
   }
 
   //Get product con query, para poder ordenar y filtrar productos.
-  getProductsQuery = async (limit, page, sort, categoria) => {
+  getProductsQuery = async (limit, page, sort, category) => {
     try {
-      // Si no se proporciona un límite, se establece en 10 por defecto
-      !limit && (limit = 9);
-      // Si no se proporciona una página, se establece en 1 por defecto
+      !limit && (limit = 10);
       !page && (page = 1);
-      // Si el ordenamiento es 'asc', se establece en 1
       sort === 'asc' && (sort = 1);
-      // Si el ordenamiento es 'des', se establece en -1
       sort === 'des' && (sort = -1);
 
-      // Se crea un filtro a partir de la consulta proporcionada, si no hay consulta, el filtro es un objeto vacío.
-      //Ejemplo {"categoria": "una categoria"}
-      const filter = categoria ? { categoria: categoria } : {};
+      const filter = category ? { category: category } : {};
       const queryOptions = { limit: limit, page: page, lean: true };
 
       if (sort === 1 || sort === -1) {
         queryOptions.sort = { price: sort };
       }
 
-      //paginacion con sus propiedades para paginar:
-      const getProducts = await ProductoModel.paginate(filter, queryOptions);
-      getProducts.isValid = !(page <= 0 || page > getProducts.totalPages); // verificamos si el número de página proporcionado es válido y dentro del rango de páginas disponibles. Si no lo es, entonces getProducts.isValid se establecerá en falso.
+      const getProducts = await ProductModel.paginate(filter, queryOptions);
+      getProducts.isValid = !(page <= 0 || page > getProducts.totalPages);
       getProducts.prevLink =
         getProducts.hasPrevPage &&
         `?page=${getProducts.prevPage}&limit=${limit}`;
@@ -123,54 +118,56 @@ class ProductoDao {
 
   async getProductById(id) {
     try {
-      const producto = await ProductoModel.findById(id);
+      const product = await ProductModel.findById(id);
 
-      if (!producto) {
-        console.log("Producto no encontrado");
+      if (!product) {
+        //console.log("Product no encontrado");
         return null;
       }
 
-      console.log("Producto encontrado!");
-      return producto;
+      //console.log("Product encontrado!");
+      return product;
     } catch (error) {
-      console.log("Error al traer un producto por id");
+      console.log("Error al recuprar un producto: ", error);
+      return null;
     }
   }
 
-  async updateProduct(id, productoActualizado) {
+  async updateProduct(id, productUpdated) {
     try {
 
-      const updateado = await ProductoModel.findByIdAndUpdate(id, productoActualizado);
+      const product = await ProductModel.findByIdAndUpdate(id, productUpdated, {returnDocument: 'after'});
+      console.log(product);
 
-      if (!updateado) {
-        console.log("Producto no encontrado.");
+      if (!product) {
+        //console.log("Product no encontrado.");
         return null;
       }
 
-      console.log("Producto actualizado correctamente.");
-      return updateado;
+      //console.log("Product actualizado correctamente.");
+      return await product.save();
     } catch (error) {
-      console.log("Error al actualizar el producto.", error);
-
+      console.log("Error al actualizar el producto: ", error);
+      return null;
     }
   }
 
   async deleteProduct(id) {
     try {
-      const deleteado = await ProductoModel.findByIdAndDelete(id);
+      const product = await ProductModel.findByIdAndDelete(id);
 
-      if (!deleteado) {
-        console.log("Producto no encontrado.");
+      if (!product) {
+        //console.log("Product no encontrado.");
         return null;
       }
 
-      console.log("Producto eliminado correctamente.");
+      //console.log("Product eliminado correctamente.");
     } catch (error) {
-      console.log("Error al eliminar el producto.", error);
+      //console.log("Error al eliminar el producto.", error);
       throw error;
     }
   }
 
 }
 
-export default new ProductoDao();
+export default new ProductDao();

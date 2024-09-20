@@ -48,16 +48,17 @@
       ]
   },
   {
-      "code": "71Pizzas con Salchicas",
-      "precio": 2200,
-      "categoria": "Pizzas",
-      "destacado": true,
-      "activo": true,
-      "stock": 4,
-      "thumbnails": [
-          "pizza4.jpeg"
-      ]
-  },
+    "code": "73216546786443",
+    "nombre": "Pizzas con Salchichas",
+    "precio": 2200,
+    "categoria": "Pizzas",
+    "destacado": true,
+    "activo": true,
+    "stock": 12,
+    "thumbnails": [
+        "pizza3.jpeg"
+    ]
+},
   {
       "code": "7123145646748",
       "nombre": "Pizzas Mozzarella",

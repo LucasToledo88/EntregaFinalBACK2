@@ -15,8 +15,8 @@ export const passportCall = (strategy) => {
       }
 
       if (!user) {
-        //return res.redirect("/login");
-        return res.status(401).send({ error: info.message ? info.message : info.toString() });
+        return res.redirect("/login"), {error: 'Debes iniciar sesión para hacer uso de esta páginas especiales.'};
+        //return res.status(401).send({ error: info.message ? info.message : info.toString() });
       }
 
       req.user = user;
@@ -34,4 +34,14 @@ export const authorization = (role) => {
     }
     next();
   }
+}
+
+export function generarClaveAleatoria(longitud) {
+  const caracteres = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ-abcdefghijklmnopqrstuvwxyz0123456789.';
+  let clave = '';
+  for (let i = 0; i < longitud; i++) {
+      const indiceAleatorio = Math.floor(Math.random() * caracteres.length);
+      clave += caracteres[indiceAleatorio];
+  }
+  return clave;
 }

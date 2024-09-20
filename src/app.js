@@ -3,16 +3,20 @@ import exphbs from "express-handlebars";
 import passport from "passport";
 import initializePassport from "./config/passport.config.js";
 import cookieParser from "cookie-parser";
-import productRouter from "./routes/product.router.js";
+import productsRouter from "./routes/products.router.js";
+import cartsRouter from "./routes/carts.router.js";
 import sessionRouter from "./routes/session.router.js";
 import shopRouter from "./routes/shop.router.js";
+import { jwtDecode } from "jwt-decode";
 import { Server } from "socket.io";
 import productService from "./services/product.service.js";
+import config from "./config/config.js";
 import "./config/database.js";
 
-const app = express();
-const PUERTO = 8080;
+const PORT = config.PORT;
+const VERSION = config.VERSION;
 
+const app = express();
 
 // Middleware
 app.use(express.json());
@@ -29,132 +33,88 @@ app.set("view engine", "handlebars");
 app.set("views", "./src/views");
 
 // Rutas
-app.use("/", shopRouter);
-app.use("/productos", productRouter);
+app.use("/api/products", productsRouter);
+app.use("/api/carts", cartsRouter);
 app.use("/api/sessions", sessionRouter);
+app.use("/", shopRouter); // VISTAS
 
 // Iniciamos servidor
-const httpServer = app.listen(PUERTO, () => {
-  console.log(`Escuchando en el puerto ${PUERTO}.`);
+const httpServer = app.listen(PORT, () => {
+  console.log(`✅ Servidor Listo. Escuchando en el puerto ${PORT}.`);
+  console.log(`✅ Versión: ${VERSION}. Backend II - Comisión 69995. Campo Gabriel.`);
 });
 
 const socketServer = new Server(httpServer);
 
 // Configurar el evento de conexión de Socket.IO
-
 socketServer.on('connection', async (socket) => {
 
-  console.log("nuevo cliente conectado")
+  socket.on('agregarProducto', async (data) => {
+    // antes de nada, verifico si tiene permisos
+    const cookie = socket.handshake.headers.cookie ?? '';
+    const decoded = jwtDecode(cookie);
+    const role = decoded.role;
+    if (role !== 'admin') {
+      socket.emit('mostrarMsj', { tipo: 'error', mensaje: 'No tienes permisos para agregar productos.' });
+      return;
+    }
 
-  //websockets para Productos:
+    console.log('agregarProducto', data);
 
-  const products = await productService.getProducts()
-  socket.emit('productos', products); //enviamos al cliente un array con todos los productos.
+    try {
+      const producto = await productService.addProduct(data);
 
-  //#ADD PRODUCT:
-  //recibimos informacion del cliente, en este caso un nuevo producto y lo agregamos a nuestra base de datos.
-  socket.on('addProduct', async data => {
-
-      // const product = data.product;
-      // const userId = data.userId;
-      // const userRole = data.userRole
-
-      // //caso que el administrador quiera crear un producto
-      // if (!userId && userRole === 'admin') {
-      //     await productService.addProduct(product)
-      //     const updateProductsList = await productService.getProducts();
-      //     socket.emit('updatedProducts', updateProductsList ); //le enviamos al cliente la lista de productos actualizada con el producto que anteriormente agrego.
-      //     socket.emit('productAdded'); //para el manejo de alertas
-      //     return;
-      // }
-
-      // //caso que un usuario cree un producto
-      // const user = await userService.getUserById(userId);
-      // if(user) product.owner = user._id
-
-      // await productService.addProduct(product)
-      // const updateProductsList = await productService.getProducts();
-      // socket.emit('updatedProducts', updateProductsList ); //le enviamos al cliente la lista de productos actualizada con el producto que anteriormente agrego.
-      // socket.emit('productAdded'); //para el manejo de alertas
-
-      const updateProductsList = await productService.getProducts();
-      socket.emit('updatedProducts', updateProductsList ); //le enviamos al cliente la lista de productos actualizada con el producto que anteriormente agrego.
-      socket.emit('productAdded'); //para el manejo de alertas
-  })
-
-  //#UPDATE PRODUCT:
-  socket.on('updateProduct', async (productData, userData) => {
-      const idProduct = productData._id;
-      delete productData._id; // Eliminar el _id del objeto para evitar errores
-
-      // Obtener el producto de la base de datos
-      const product = await productService.getProductById(idProduct);
-
-      // Verificar si el usuario es el propietario del producto o es un administrador
-      if (userData.role === 'admin' || product.owner === userData._id) {
-
-          // Actualizar el producto en la base de datos
-          await productService.updateProduct(idProduct, { $set: productData });
-
-          const updateProductsList = await productService.getProducts();
-          socket.emit('updatedProducts', updateProductsList ); //le enviamos al cliente la lista de productos actualizada con el producto que anteriormente agrego.
-          socket.emit('productUpdated');//para el manejor de alertas
+      if (producto) {
+        socket.emit('agregarProductoAgregado', producto);
       } else {
-          // Enviar un mensaje de error al cliente
-          socket.emit('error',  'No tienes permiso para actualizar este producto.' );
+        socket.emit('mostrarMsj', { tipo: 'error', mensaje: 'El producto no fue cargado.' });
       }
+
+    } catch (error) {
+      //console.log(error);
+      socket.emit('mostrarMsj', { tipo: 'error', mensaje: 'Error al crear producto: ' + error });
+    }
+
   });
 
+  socket.on('editarProducto', async (data) => {
+    // antes de nada, verifico si tiene permisos
+    const cookie = socket.handshake.headers.cookie ?? '';
+    const decoded = jwtDecode(cookie);
+    const role = decoded.role;
+    if (role !== 'admin') {
+      socket.emit('mostrarMsj', { tipo: 'error', mensaje: 'No tienes permiso para actualizar productos.' });
+      return;
+    }
 
-  //#DELETE PRODUCT:
-  //recibimos del cliente el id del producto a eliminar
-  socket.on('deleteProduct', async (productId , userData) => {
+    console.log('editarProducto', data);
 
-      const updateProducts = await productService.getProducts(); //obtenemos la lista actualizada con el producto eliminado
-      socket.emit('updatedProducts', updateProducts ); //le enviamos al cliente la lista actualizada
+    const productoId = data.id;
+    delete data.id;
 
-      // // Obtenemos el producto
-      // const product = await productService.getProductById(productId);
+    try {
+      const producto = await productService.updateProduct(productoId, data);
+      socket.emit('editarProductoEditado', producto);
+    } catch (error) {
+      //console.log(error);
+      socket.emit('mostrarMsj', { tipo: 'error', mensaje: 'Eror al actualizar producto: ' + error });
+    }
 
-      // if (product === null) {
-      //     socket.emit('error', 'Producto no encontrado');
-      // }
-      // // Verificamos si el usuario es el propietario del producto o si es admin
-      // else if (userData.role === 'admin' || product.owner === userData._id) {
-      //     await productService.deleteProduct(productId); //eliminamos el producto
-      //     const updateProducts = await productService.getProducts(); //obtenemos la lista actualizada con el producto eliminado
-      //     socket.emit('updatedProducts', updateProducts ); //le enviamos al cliente la lista actualizada
-      //     socket.emit('productDeleted')//para el manejo de alertas
-      // } else {
-      //     socket.emit('error', 'No tienes permiso para eliminar este producto');
-      // }
-  })
+  });
 
-})
+  socket.on('borrarProducto', async (productoId) => {
+    // antes de nada, verifico si tiene permisos
+    const cookie = socket.handshake.headers.cookie ?? '';
+    const decoded = jwtDecode(cookie);
+    const role = decoded.role;
+    if (role !== 'admin') {
+      socket.emit('mostrarMsj', { tipo: 'error', mensaje: 'No tienes permiso para borrar productos.' });
+      return;
+    }
 
+    const producto = await productService.deleteProduct(productoId);
 
+    socket.emit('borrarProductoBorrado', productoId);
+  });
 
-
-
-//websockets para el chat:
-
-socketServer.on('connection', async (socket) => {
-
-  console.log("nuevo cliente conectado 2")
-
-
-  //recibimos el nombre del usuario que se registro:
-  socket.on('authenticated', data => {
-      console.log(data)
-      socket.broadcast.emit('newUserConnected', data);
-  })
-
-
-  //recibimos el usuario con su mensaje
-  socket.on('message', async data => {
-      console.log(data)
-      const addMessage = await messageService.addMessages(data); //agregamos el mensaje del usuario a la base de datos.
-      const messages = await messageService.getMessages(); //obtenemos todos los mensajes de la base de datos.
-      socket.emit('messageLogs', messages); //enviamos al cliente la lista de todos los mensajes (array).
-  })
 });
