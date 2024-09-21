@@ -41,7 +41,7 @@ app.use("/", shopRouter); // VISTAS
 // Iniciamos servidor
 const httpServer = app.listen(PORT, () => {
   console.log(`✅ Servidor Listo. Escuchando en el puerto ${PORT}.`);
-  console.log(`✅ Versión: ${VERSION}. Backend II - Comisión 69995. Campo Gabriel.`);
+  console.log(`✅ Versión: ${VERSION}. Backend II`);
 });
 
 const socketServer = new Server(httpServer);

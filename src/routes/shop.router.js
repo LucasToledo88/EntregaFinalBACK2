@@ -9,37 +9,15 @@ const cartDao = new CartDao();
 
 router.get("/", async (req, res) => {
   try {
-    const titulo = "Todos nuestros Productos";
+    const titulo = "Todas Nuestras Delicias";
     const productos = await ProductModel.find({ active: true }).lean();
-    const categorias = await ProductModel.distinct("category").lean();
-    res.render("store", { productos, categorias, titulo });
+    res.render("store", { productos, titulo });
   } catch (error) {
     res.status(500).send("Error al recuperar Productos Activos.")
   }
 });
 
-router.get("/destacados", async (req, res) => {
-  try {
-    const titulo = "Productos Destacados";
-    const productos = await ProductModel.find({ important: true, active: true }).lean();
-    const categorias = await ProductModel.distinct("category").lean();
-    res.render("store", { productos, categorias, titulo });
-  } catch (error) {
-    res.status(500).send("Error al recuperar Productos Destacados.")
-  }
-});
 
-router.get("/categorias/:categoria", async (req, res) => {
-  try {
-    const category = req.params.category ?? '';
-    const titulo = "Productos por Categoria";
-    const productos = await ProductModel.find({ active: true, category: category }).lean();
-    const categorias = await ProductModel.distinct("category").lean();
-    res.render("store", { productos, categorias, titulo });
-  } catch (error) {
-    res.status(500).send("Error al recuperar Categorias.")
-  }
-});
 
 router.get("/login", (req, res) => {
   //si tiene token, está logueado
@@ -65,8 +43,7 @@ router.get("/realtimeproducts", passportCall("jwt"), async (req, res) => {
   try {
     const titulo = "Productos en tiempo real 😏";
     const productos = await ProductModel.find({ active: true }).lean();
-    const categorias = await ProductModel.distinct("category").lean();
-    res.render("realtimeProducts", { productos, categorias, titulo });
+    res.render("realtimeProducts", { productos, titulo });
   } catch (error) {
     res.status(500).send("Error al recuperar Productos para Tiempo Real.")
   }
@@ -78,7 +55,6 @@ router.get("/cart", passportCall("jwt"), async (req, res) => {
     if (req.user.role !== "user") res.redirect("/sinpermisos");
 
     const titulo = "🛒 Tu Carrito de compras";
-    const categorias = await ProductModel.distinct("category").lean();
 
     const carrito_id = req.user.cart;
     const carrito = await cartDao.getCartById(carrito_id);
@@ -88,7 +64,7 @@ router.get("/cart", passportCall("jwt"), async (req, res) => {
 
     console.log(productos);
 
-    res.render("cart", { productos, categorias, titulo });
+    res.render("cart", { productos, titulo });
   } catch (error) {
     res.status(500).send("Error al recuperar tu carrito: " + error)
   }
@@ -103,8 +79,7 @@ router.get("/product/:producto_id", passportCall("jwt"), async (req, res) => {
       const producto_id = req.params.producto_id ?? '';
       const titulo = "Datos Producto";
       const producto = await ProductModel.findById(producto_id).lean();
-      const categorias = await ProductModel.distinct("category").lean();
-      res.render("product", { producto, categorias, titulo, carrito_id });
+      res.render("product", { producto, titulo, carrito_id });
     } else {
       res.redirect("/login");
     }
